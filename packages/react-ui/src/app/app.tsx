@@ -29,6 +29,13 @@ if (!typesFormatsAdded) {
 }
 
 export function App() {
+  const queryString = window.location.search;
+  const urlParams = new URLSearchParams(queryString);
+  const token = urlParams.get('jwt');
+  if (token ){
+    localStorage.setItem("token",token)
+
+  }
   const { i18n } = useTranslation();
   return (
     <QueryClientProvider client={queryClient}>

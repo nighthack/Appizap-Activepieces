@@ -251,6 +251,9 @@
       "@activepieces/piece-datocms": [
         "packages/pieces/community/datocms/src/index.ts"
       ],
+      "@activepieces/piece-db-builder": [
+        "packages/pieces/custom/db-builder/src/index.ts"
+      ],
       "@activepieces/piece-deepgram": [
         "packages/pieces/community/deepgram/src/index.ts"
       ],

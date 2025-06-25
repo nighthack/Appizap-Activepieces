@@ -252,7 +252,7 @@ function isSupportedRelease(release: string | undefined, piece: PieceMetadataSch
 }
 
 function isOfficialPiece(piece: PieceMetadataSchema): boolean {
-    return piece.pieceType === PieceType.OFFICIAL && isNil(piece.projectId) && isNil(piece.platformId)
+    return piece.pieceType === PieceType.OFFICIAL 
 }
 
 function isProjectPiece(projectId: string | undefined, piece: PieceMetadataSchema): boolean {

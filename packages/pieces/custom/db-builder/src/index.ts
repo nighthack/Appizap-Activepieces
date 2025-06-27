@@ -4,6 +4,7 @@ import { createRow } from './lib/actions/createRow';
 import { updateRow } from './lib/actions/updateRow';
 import {deleteRow} from './lib/actions/deleteRow';
 import { runCustomSql } from './lib/actions/runCustomSql';
+import { dbBuilderLogo } from './db-builder-logo';
 
 export const dbBuilderAuth = PieceAuth.CustomAuth({
   required: true,
@@ -48,7 +49,7 @@ export const dbBuilder = createPiece({
   displayName: 'db-builder',
   auth: dbBuilderAuth,
   minimumSupportedRelease: '0.36.1',
-  logoUrl: 'https://cdn.activepieces.com/pieces/db-builder.png',
+  logoUrl: dbBuilderLogo,
   authors: [],
   actions: [list,createRow,updateRow,deleteRow, runCustomSql],
   triggers: [],

@@ -17,6 +17,7 @@ import { ChangelogProvider } from './components/changelog-provider';
 import { EmbeddingFontLoader } from './components/embedding-font-loader';
 import { InitialDataGuard } from './components/initial-data-guard';
 import { ApRouter } from './router';
+import IframeMessageProvider from '@/components/iframe-message-provider';
 
 const queryClient = new QueryClient();
 let typesFormatsAdded = false;
@@ -39,6 +40,7 @@ export function App() {
   const { i18n } = useTranslation();
   return (
     <QueryClientProvider client={queryClient}>
+      <IframeMessageProvider>
       <EmbeddingProvider>
         <InitialDataGuard>
           <EmbeddingFontLoader>
@@ -58,6 +60,7 @@ export function App() {
           </EmbeddingFontLoader>
         </InitialDataGuard>
       </EmbeddingProvider>
+      </IframeMessageProvider>
     </QueryClientProvider>
   );
 }

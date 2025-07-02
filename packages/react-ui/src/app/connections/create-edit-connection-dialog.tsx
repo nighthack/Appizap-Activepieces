@@ -51,6 +51,9 @@ import { BasicAuthConnectionSettings } from './basic-secret-connection-settings'
 import { CustomAuthConnectionSettings } from './custom-auth-connection-settings';
 import { OAuth2ConnectionSettings } from './oauth2-connection-settings';
 import { SecretTextConnectionSettings } from './secret-text-connection-settings';
+import { useUser } from '@/components/iframe-message-provider';
+import { toast } from '@/components/ui/use-toast';
+
 
 type ConnectionDialogProps = {
   piece: PieceMetadataModelSummary | PieceMetadataModel;
@@ -114,6 +117,12 @@ const CreateOrEditConnectionDialogContent = React.memo(
       form.trigger();
     });
     const [errorMessage, setErrorMessage] = useState('');
+    const user = useUser();
+    const copyToClipboard = (text: string) => {
+      navigator.clipboard.writeText(text).then(() => {
+        toast({ title: 'Copied Org ID!' });
+      });
+    };
 
     const { mutate: upsertConnection, isPending } =
       appConnectionsMutations.useUpsertAppConnection({
@@ -213,11 +222,37 @@ const CreateOrEditConnectionDialogContent = React.memo(
                 </div>
               )}
               {auth?.type === PropertyType.CUSTOM_AUTH && (
-                <div className="mt-3.5">
-                  <CustomAuthConnectionSettings
-                    authProperty={piece.auth as CustomAuthProperty<any>}
-                  />
+                <>
+                <CustomAuthConnectionSettings
+                  authProperty={piece.auth as CustomAuthProperty<any>}
+                />
+              {piece.name === '@activepieces/piece-db-builder' && (
+                <div className="mt-2">
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  className="w-fit"
+                  onClick={() => {
+                    const actualOrgId = user?.currentOrgId ?? '';
+
+                    form.setValue('request' as any, {
+                      ...form.getValues().request,
+                      value: {
+                        ...form.getValues().request.value,
+                        orgId: actualOrgId,
+                      },
+                    });
+
+                    copyToClipboard(actualOrgId);
+                  }}
+                >
+                  Copy Org ID
+                </Button>
+
                 </div>
+              )}
+                </>
               )}
               {auth?.type === PropertyType.OAUTH2 && (
                 <div className="mt-3.5">

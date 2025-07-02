@@ -1,16 +1,21 @@
-import React, { useEffect, useRef } from 'react'
+import React, { useEffect, useRef,useState,createContext,useContext,} from 'react'
 
 type IframeMessageProviderProps = {
   children: React.ReactNode;
 };
 
+export type UserType = {
+  currentOrgId: string;
+};
+const UserContext = createContext<UserType | null>(null);
+export const useUser = () => useContext(UserContext);
 
 export default function IframeMessageProvider({ children }:IframeMessageProviderProps) {    
     const WF_IFRAME_CHANNEL_ID = "newWorkflowBuilderIframeChannel"
     const appizapURL = import.meta.env.VITE_APPIZAP_FRONTEND_URL
     const appizapOrigin = new URL(appizapURL || "").origin
     const versionRef = useRef(-1)
-    
+    const [user, setUser] = useState<UserType | null>(null);
     function handler(event: MessageEvent) {
         if (event?.data?.id && event.data.id == WF_IFRAME_CHANNEL_ID) {
           console.log(event, "in child")
@@ -26,6 +31,7 @@ export default function IframeMessageProvider({ children }:IframeMessageProvider
               return
             }
             console.log("User data", event.data.User)
+            setUser(event.data.User);
             window.top.postMessage(AckData, appizapOrigin)
             versionRef.current = event.data.version
           } else {
@@ -47,8 +53,8 @@ export default function IframeMessageProvider({ children }:IframeMessageProvider
   }, [])
   
     return (
-    <>
+    <UserContext.Provider value={user}>
     {children}
-    </>
+    </UserContext.Provider>
   )
 }

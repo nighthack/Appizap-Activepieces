@@ -275,7 +275,7 @@ const CreateOrEditConnectionDialogContent = React.memo(
                 <CustomAuthConnectionSettings
                   authProperty={piece.auth as CustomAuthProperty<any>}
                 />
-              {piece.name === '@activepieces/piece-db-builder' && (
+              {['@activepieces/piece-db-builder', 'storage'].includes(piece.name) && (
                 <div className="mt-2">
                 <Button
                   type="button"

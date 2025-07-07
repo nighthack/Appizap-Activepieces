@@ -61,7 +61,7 @@ export const storageAuth = PieceAuth.CustomAuth({
 });
 
 export const storage = createPiece({
-  displayName: 'Storage',
+  displayName: 'Appizap-Storage',
   auth: storageAuth,
   minimumSupportedRelease: '0.36.1',
   logoUrl: storageLogo,

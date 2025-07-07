@@ -1,70 +1,51 @@
-import { DEFAULT_FREE_PLAN_LIMIT } from '@activepieces/ee-shared'
+import { APPSUMO_PLAN, FREE_CLOUD_PLAN, PlatformPlanWithOnlyLimits } from '@activepieces/ee-shared'
 import { isNil, PlatformRole } from '@activepieces/shared'
 import { FastifyBaseLogger } from 'fastify'
 import { userIdentityService } from '../../authentication/user-identity/user-identity-service'
 import { repoFactory } from '../../core/db/repo-factory'
 import { projectService } from '../../project/project-service'
 import { userRepo } from '../../user/user-service'
-import { platformBillingService } from '../platform/platform-billing/platform-billing.service'
+import { platformPlanService } from '../platform/platform-plan/platform-plan.service'
 import { AppSumoEntity, AppSumoPlan } from './appsumo.entity'
 
 const appsumoRepo = repoFactory(AppSumoEntity)
 
-type FlowPlanLimits = {
-    nickname: string
-    tasks: number
-    minimumPollingInterval: number
-    connections: number
-    teamMembers: number
-}
 
-const appSumoPlans: Record<string, FlowPlanLimits> = {
-    activepieces_tier1: {
-        nickname: 'appsumo_activepieces_tier1',
-        tasks: 10000,
-        minimumPollingInterval: 10,
-        connections: 100,
-        teamMembers: 1,
-    },
-    activepieces_tier2: {
-        nickname: 'appsumo_activepieces_tier2',
-        tasks: 50000,
-        minimumPollingInterval: 5,
-        connections: 100,
-        teamMembers: 1,
-    },
-    activepieces_tier3: {
-        nickname: 'appsumo_activepieces_tier3',
-        tasks: 200000,
-        minimumPollingInterval: 1,
-        connections: 100,
-        teamMembers: 5,
-    },
-    activepieces_tier4: {
-        nickname: 'appsumo_activepieces_tier4',
-        tasks: 500000,
-        minimumPollingInterval: 1,
-        connections: 100,
-        teamMembers: 5,
-    },
-    activepieces_tier5: {
-        nickname: 'appsumo_activepieces_tier5',
-        tasks: 1000000,
-        minimumPollingInterval: 1,
-        connections: 100,
-        teamMembers: 5,
-    },
-    activepieces_tier6: {
-        nickname: 'appsumo_activepieces_tier6',
-        tasks: 10000000,
-        minimumPollingInterval: 1,
-        connections: 100,
-        teamMembers: 5,
-    },
+const appSumoPlans: Record<string, PlatformPlanWithOnlyLimits> = {
+    activepieces_tier1: APPSUMO_PLAN({
+        planName: 'appsumo_activepieces_tier1',
+        tasksLimit: 10000,
+        userSeatsLimit: 1,
+    }),
+    activepieces_tier2: APPSUMO_PLAN({
+        planName: 'appsumo_activepieces_tier2',
+        tasksLimit: 50000,
+        userSeatsLimit: 1,
+    }),
+    activepieces_tier3: APPSUMO_PLAN({
+        planName: 'appsumo_activepieces_tier3',
+        tasksLimit: 200000,
+        userSeatsLimit: 5,
+    }),
+    activepieces_tier4: APPSUMO_PLAN({
+        planName: 'appsumo_activepieces_tier4',
+        tasksLimit: 500000,
+        userSeatsLimit: 5,
+    }),
+    activepieces_tier5: APPSUMO_PLAN({
+        planName: 'appsumo_activepieces_tier5',
+        tasksLimit: 1000000,
+        userSeatsLimit: 5,
+    }),
+    activepieces_tier6: APPSUMO_PLAN({
+        planName: 'appsumo_activepieces_tier6',
+        tasksLimit: 10000000,
+        userSeatsLimit: 5,
+    }),
 }
 
 export const appsumoService = (log: FastifyBaseLogger) => ({
-    getPlanInformation(plan_id: string): FlowPlanLimits {
+    getPlanInformation(plan_id: string): PlatformPlanWithOnlyLimits {
         return appSumoPlans[plan_id]
     },
     async getByEmail(email: string): Promise<AppSumoPlan | null> {
@@ -97,24 +78,29 @@ export const appsumoService = (log: FastifyBaseLogger) => ({
         const appSumoPlan = appsumoService(log).getPlanInformation(plan_id)
         const identity = await userIdentityService(log).getIdentityByEmail(activation_email)
         if (!isNil(identity)) {
-            const user = await userRepo().findOneBy({
-                identityId: identity.id,
-                platformRole: PlatformRole.ADMIN,
+            const user = await userRepo().findOne({
+                where: {
+                    identityId: identity.id,
+                    platformRole: PlatformRole.ADMIN,
+                },
+                order: {
+                    created: 'ASC',
+                },
             })
             if (!isNil(user)) {
                 const project = await projectService.getUserProjectOrThrow(user.id)
-                await platformBillingService(log).getOrCreateForPlatform(project.platformId)
+                await platformPlanService(log).getOrCreateForPlatform(project.platformId)
 
                 if (action === 'refund') {
-                    await platformBillingService(log).update({
+                    await platformPlanService(log).update({
                         platformId: project.platformId,
-                        tasksLimit: DEFAULT_FREE_PLAN_LIMIT.tasks,
+                        ...FREE_CLOUD_PLAN,
                     })
                 }
                 else {
-                    await platformBillingService(log).update({
+                    await platformPlanService(log).update({
                         platformId: project.platformId,
-                        tasksLimit: appSumoPlan.tasks,
+                        ...appSumoPlan,
                     })
 
                 }

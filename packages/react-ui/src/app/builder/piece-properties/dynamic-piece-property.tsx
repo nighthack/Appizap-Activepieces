@@ -5,8 +5,8 @@ import { useFormContext, useWatch } from 'react-hook-form';
 import { useDeepCompareEffectNoCheck } from 'use-deep-compare-effect';
 
 import { useBuilderStateContext } from '@/app/builder/builder-hooks';
-import { formUtils } from '@/app/builder/piece-properties/form-utils';
 import { SkeletonList } from '@/components/ui/skeleton';
+import { formUtils } from '@/features/pieces/lib/form-utils';
 import { piecesApi } from '@/features/pieces/lib/pieces-api';
 import {
   PiecePropertyMap,
@@ -155,9 +155,7 @@ const DynamicPropertiesImplementation = React.memo(
     return (
       <>
         {isPending && (
-          <div className="space-y-3">
-            <SkeletonList numberOfItems={3} className="h-7"></SkeletonList>
-          </div>
+          <SkeletonList numberOfItems={3} className="h-7"></SkeletonList>
         )}
         {!isPending && propertyMap && (
           <AutoPropertiesFormComponent

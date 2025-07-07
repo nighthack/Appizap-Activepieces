@@ -1,5 +1,6 @@
 import { createAction, Property } from '@activepieces/pieces-framework';
 import { createClient } from '@supabase/supabase-js';
+import { getUUID, getBuckets } from './utils';
 
 export const deleteFile = createAction({
   name: 'delete_file',
@@ -10,7 +11,7 @@ export const deleteFile = createAction({
       displayName: 'Bucket Name or ID',
       required: true,
       refreshers: [],
-      options: async () => {
+      options: async (propsValue) => {
         const supabaseUrl = process.env['AP_SUPABASE_GATEWAY'];
         const supabaseKey = process.env['AP_SUPABASE_API_KEY'];
 
@@ -18,20 +19,21 @@ export const deleteFile = createAction({
           throw new Error('Supabase Gateway URL or API Key not configured.');
         }
 
-        const client = createClient(supabaseUrl, supabaseKey, {
-          global: {
-            fetch: fetch as any,
-          },
-        });
-
-        const result = await client.storage.listBuckets();
-        if (result.error) {
-          throw new Error(`Failed to fetch buckets: ${result.error.message}`);
+        const auth = propsValue['auth'] as { orgId: string };
+        if (!auth?.orgId) {
+          return {
+            options: [],
+            disabled: true,
+            placeholder: 'Invalid Org ID',
+          };
         }
 
+        const uuid = await getUUID(auth.orgId);
+        const buckets = await getBuckets(uuid);
+
         return {
-          options: result.data.map(bucket => ({
-            label: bucket.name.split('_')[1] || bucket.name,
+          options: buckets.map(bucket => ({
+            label: bucket.name.split('_').pop() || bucket.name,
             value: bucket.name,
           })),
         };

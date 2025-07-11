@@ -81,6 +81,7 @@ export type ApErrorParams =
     | McpPieceRequiresConnectionParams
     | McpPieceConnectionMismatchParams
     | ErrorUpdatingSubscriptionParams
+    | JwtTokenNotFoundErrorParams
 
 export type BaseErrorParams<T, V> = {
     code: T
@@ -471,6 +472,12 @@ export type McpPieceConnectionMismatchParams = BaseErrorParams<ErrorCode.MCP_PIE
     connectionPieceName: string
     connectionId: string
 }>
+export type JwtTokenNotFoundErrorParams = BaseErrorParams<
+ErrorCode.JWT_TOKEN_NOT_FOUND,
+{
+    message: string
+}
+>
 
 export enum ErrorCode {
     INVALID_CUSTOM_DOMAIN = 'INVALID_CUSTOM_DOMAIN',
@@ -538,4 +545,5 @@ export enum ErrorCode {
     COPILOT_FAILED = 'COPILOT_FAILED',
     MCP_PIECE_REQUIRES_CONNECTION = 'MCP_PIECE_REQUIRES_CONNECTION',
     MCP_PIECE_CONNECTION_MISMATCH = 'MCP_PIECE_CONNECTION_MISMATCH',
+    JWT_TOKEN_NOT_FOUND = 'JWT_TOKEN_NOT_FOUND'
 }

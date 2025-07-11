@@ -90,8 +90,8 @@ export const emailService = (log: FastifyBaseLogger) => ({
         const project = await projectService.getOne(projectId)
         assertNotNullOrUndefined(project, 'project')
 
-        const platform = await platformService.getOneOrThrow(project.platformId)
-        if (!platform.alertsEnabled || platform.embeddingEnabled) {
+        const platform = await platformService.getOneWithPlanOrThrow(project.platformId)
+        if (!platform.plan.alertsEnabled || platform.plan.embeddingEnabled) {
             return
         }
 
@@ -193,6 +193,79 @@ export const emailService = (log: FastifyBaseLogger) => ({
                     issuesCount: issues.data.length.toString(),
                     projectName: job.projectName,
                     issues: JSON.stringify(issuesWithFormattedDate),
+                },
+            },
+        })
+    },
+
+
+    async sendThreeDaysLeftOnTrialEmail(
+        platformId: string,
+        customerEmail: string,
+    ): Promise<void> {
+
+        await emailSender(log).send({
+            emails: [customerEmail],
+            platformId,
+            templateData: {
+                name: '3-days-left-on-trial',
+                vars: {
+                    year: new Date().getFullYear().toString(),
+                },
+            },
+        })
+
+    },
+
+
+    async sendOneDayLeftOnTrial(
+        platformId: string,
+        customerEmail: string,
+    ): Promise<void> {
+
+        await emailSender(log).send({
+            emails: [customerEmail],
+            platformId,
+            templateData: {
+                name: '1-day-left-on-trial',
+                vars: {
+                    year: new Date().getFullYear().toString(),
+                },
+            },
+        })
+
+    },
+
+
+    async sendWellcomeToTrialEmail(
+        platformId: string,
+        customerEmail: string,
+    ): Promise<void> {
+
+        await emailSender(log).send({
+            emails: [customerEmail],
+            platformId,
+            templateData: {
+                name: 'wellcome-to-trial',
+                vars: {
+                    year: new Date().getFullYear().toString(),
+                },
+            },
+        })
+    },
+
+    async sendSevenDaysInTrialEmail(
+        platformId: string,
+        customerEmail: string,
+    ): Promise<void> {
+
+        await emailSender(log).send({
+            emails: [customerEmail],
+            platformId,
+            templateData: {
+                name: '7-days-in-trial',
+                vars: {
+                    year: new Date().getFullYear().toString(),
                 },
             },
         })

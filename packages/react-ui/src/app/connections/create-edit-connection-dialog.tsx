@@ -223,37 +223,9 @@ const CreateOrEditConnectionDialogContent = React.memo(
               )}
               {auth?.type === PropertyType.CUSTOM_AUTH && (
                 <>
-                <>
                 <CustomAuthConnectionSettings
                   authProperty={piece.auth as CustomAuthProperty<any>}
                 />
-              {['@activepieces/piece-db-builder', 'storage'].includes(piece.name) && (
-                <div className="mt-2">
-                <Button
-                  type="button"
-                  variant="outline"
-                  size="sm"
-                  className="w-fit"
-                  onClick={() => {
-                    const actualOrgId = user?.currentOrgId ?? '';
-
-                    form.setValue('request' as any, {
-                      ...form.getValues().request,
-                      value: {
-                        ...form.getValues().request.value,
-                        orgId: actualOrgId,
-                      },
-                    });
-
-                    copyToClipboard(actualOrgId);
-                  }}
-                >
-                  Copy Org ID
-                </Button>
-
-                </div>
-              )}
-                </>
               {['@activepieces/piece-db-builder', 'storage'].includes(piece.name) && (
                 <div className="mt-2">
                 <Button

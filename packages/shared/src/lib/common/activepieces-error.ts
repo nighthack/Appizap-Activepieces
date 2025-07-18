@@ -82,6 +82,7 @@ export type ApErrorParams =
     | McpPieceConnectionMismatchParams
     | JwtTokenNotFoundErrorParams
     | ErrorUpdatingSubscriptionParams
+    | JwtTokenNotFoundErrorParams
 
 export type BaseErrorParams<T, V> = {
     code: T

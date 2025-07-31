@@ -12,6 +12,8 @@ import { SystemJobName } from '../helper/system-jobs/common'
 import { systemJobHandlers } from '../helper/system-jobs/job-handlers'
 import { PieceMetadataEntity } from './piece-metadata-entity'
 import { pieceMetadataService } from './piece-metadata-service'
+import { readFile } from 'fs/promises';
+import path from 'path';
 
 const CLOUD_API_URL = 'https://cloud.activepieces.com/api/v1/pieces'
 const piecesRepo = repoFactory(PieceMetadataEntity)
@@ -48,10 +50,10 @@ export const pieceSyncService = (log: FastifyBaseLogger) => ({
             const pieces = await listPieces()
             const promises: Promise<void>[] = []
 
-            for (const summary of pieces) {
-                const lastVersionSynced = await existsInDatabase({ name: summary.name, version: summary.version })
-                if (!lastVersionSynced) {
-                    promises.push(syncPiece(summary.name, log))
+            for (const { name, version } of pieces) {
+                const alreadySynced = await existsInDatabase({ name, version });
+                if (!alreadySynced) {
+                    promises.push(syncPiece(name, version, log));
                 }
             }
             await Promise.all(promises)
@@ -62,24 +64,17 @@ export const pieceSyncService = (log: FastifyBaseLogger) => ({
     },
 })
 
-async function syncPiece(name: string, log: FastifyBaseLogger): Promise<void> {
+async function syncPiece(name: string, version: string, log: FastifyBaseLogger): Promise<void> {
     try {
-        log.info({ name }, 'Syncing piece metadata into database')
-        const versions = await getVersions({ name })
-        for (const version of Object.keys(versions)) {
-            const currentVersionSynced = await existsInDatabase({ name, version })
-            if (!currentVersionSynced) {
-                const piece = await getOrThrow({ name, version })
-                await pieceMetadataService(log).create({
-                    pieceMetadata: piece,
-                    packageType: piece.packageType,
-                    pieceType: piece.pieceType,
-                })
-            }
-        }
-    }
-    catch (error) {
-        log.error(error, 'Error syncing piece, please upgrade the activepieces to latest version')
+        log.info({ name, version }, 'Syncing piece metadata into database')
+        const piece = await getOrThrow({ name, version });
+        await pieceMetadataService(log).create({
+            pieceMetadata: piece,
+            packageType: piece.packageType,
+            pieceType: piece.pieceType,
+        });
+    } catch (error) {
+        log.error(error, 'Error syncing piece, please upgrade the activepieces to latest version');
     }
 
 }
@@ -109,17 +104,8 @@ async function getOrThrow({ name, version }: { name: string, version: string }):
     return response.json()
 }
 
-async function listPieces(): Promise<PieceMetadataModelSummary[]> {
-    const queryParams = new URLSearchParams()
-    queryParams.append('edition', system.getEdition())
-    queryParams.append('release', await apVersionUtil.getCurrentRelease())
-    const url = `${CLOUD_API_URL}?${queryParams.toString()}`
-    const response = await fetch(url)
-    if (response.status === StatusCodes.GONE.valueOf()) {
-        return []
-    }
-    if (response.status !== StatusCodes.OK.valueOf()) {
-        throw new Error(await response.text())
-    }
-    return response.json()
+async function listPieces(): Promise<{ name: string; version: string }[]> {
+    const filePath = path.join(__dirname, '../../assets/frozen-piece-versions.json');
+    const fileContent = await readFile(filePath, 'utf-8');
+    return JSON.parse(fileContent);
 }

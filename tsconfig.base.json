@@ -254,6 +254,9 @@
       "@activepieces/piece-deepgram": [
         "packages/pieces/community/deepgram/src/index.ts"
       ],
+      "@activepieces/piece-db-builder": [
+        "packages/pieces/custom/db-builder/src/index.ts"
+      ],
       "@activepieces/piece-deepl": [
         "packages/pieces/community/deepl/src/index.ts"
       ],

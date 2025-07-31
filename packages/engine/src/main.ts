@@ -1,3 +1,7 @@
+import dotenv from 'dotenv';
+dotenv.config({
+  path: './packages/engine/.env',
+});
 import {
     assertNotNullOrUndefined,
     EngineError,
